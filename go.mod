@@ -1,4 +1,4 @@
-module github.com/benjamincamblor/grpc_test
+module github.com/tutorialedge/go-grpc-tutorial
 
 go 1.15
 
