@@ -7,6 +7,7 @@ import(
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 	"../proto"
+	"time"
 )
 
 type server struct{}
@@ -29,7 +30,7 @@ func main(){
 func (s *server) Add(ctx context.Context, request *proto.Request) (*proto.Response, error){
 	a,b := request.GetA(), request.GetB()
 	result:= a+b
-
+ 	time.Sleep(1*60*time.Second)
 	return &proto.Response{Result: result},nil
 }
 
