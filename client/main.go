@@ -45,6 +45,7 @@ func main(){
 	//log.Print(response.Result)
 	log.Printf("Response from server: %d", response.Result)
 	break
+	
 	case 'm':
 	fmt.Println("m Key Pressed")
 	response, err := client.Multiply(context.Background(), &message)

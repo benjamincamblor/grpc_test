@@ -79,6 +79,85 @@ func (x *Request) GetB() int64 {
 	return 0
 }
 
+type ClientRequest struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Tipo           string `protobuf:"bytes,1,opt,name=tipo,proto3" json:"tipo,omitempty"`
+	NombreProducto string `protobuf:"bytes,2,opt,name=nombreProducto,proto3" json:"nombreProducto,omitempty"`
+	Valor          int64  `protobuf:"varint,3,opt,name=valor,proto3" json:"valor,omitempty"`
+	Origen         string `protobuf:"bytes,4,opt,name=origen,proto3" json:"origen,omitempty"`
+	Destino        string `protobuf:"bytes,5,opt,name=destino,proto3" json:"destino,omitempty"`
+}
+
+func (x *ClientRequest) Reset() {
+	*x = ClientRequest{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_service_proto_msgTypes[1]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *ClientRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ClientRequest) ProtoMessage() {}
+
+func (x *ClientRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_service_proto_msgTypes[1]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ClientRequest.ProtoReflect.Descriptor instead.
+func (*ClientRequest) Descriptor() ([]byte, []int) {
+	return file_service_proto_rawDescGZIP(), []int{1}
+}
+
+func (x *ClientRequest) GetTipo() string {
+	if x != nil {
+		return x.Tipo
+	}
+	return ""
+}
+
+func (x *ClientRequest) GetNombreProducto() string {
+	if x != nil {
+		return x.NombreProducto
+	}
+	return ""
+}
+
+func (x *ClientRequest) GetValor() int64 {
+	if x != nil {
+		return x.Valor
+	}
+	return 0
+}
+
+func (x *ClientRequest) GetOrigen() string {
+	if x != nil {
+		return x.Origen
+	}
+	return ""
+}
+
+func (x *ClientRequest) GetDestino() string {
+	if x != nil {
+		return x.Destino
+	}
+	return ""
+}
+
 type Response struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -90,7 +169,7 @@ type Response struct {
 func (x *Response) Reset() {
 	*x = Response{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_service_proto_msgTypes[1]
+		mi := &file_service_proto_msgTypes[2]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -103,7 +182,7 @@ func (x *Response) String() string {
 func (*Response) ProtoMessage() {}
 
 func (x *Response) ProtoReflect() protoreflect.Message {
-	mi := &file_service_proto_msgTypes[1]
+	mi := &file_service_proto_msgTypes[2]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -116,7 +195,7 @@ func (x *Response) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Response.ProtoReflect.Descriptor instead.
 func (*Response) Descriptor() ([]byte, []int) {
-	return file_service_proto_rawDescGZIP(), []int{1}
+	return file_service_proto_rawDescGZIP(), []int{2}
 }
 
 func (x *Response) GetResult() int64 {
@@ -126,22 +205,86 @@ func (x *Response) GetResult() int64 {
 	return 0
 }
 
+type ResponseToClient struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Seguimiento string `protobuf:"bytes,1,opt,name=seguimiento,proto3" json:"seguimiento,omitempty"`
+}
+
+func (x *ResponseToClient) Reset() {
+	*x = ResponseToClient{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_service_proto_msgTypes[3]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *ResponseToClient) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ResponseToClient) ProtoMessage() {}
+
+func (x *ResponseToClient) ProtoReflect() protoreflect.Message {
+	mi := &file_service_proto_msgTypes[3]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ResponseToClient.ProtoReflect.Descriptor instead.
+func (*ResponseToClient) Descriptor() ([]byte, []int) {
+	return file_service_proto_rawDescGZIP(), []int{3}
+}
+
+func (x *ResponseToClient) GetSeguimiento() string {
+	if x != nil {
+		return x.Seguimiento
+	}
+	return ""
+}
+
 var File_service_proto protoreflect.FileDescriptor
 
 var file_service_proto_rawDesc = []byte{
 	0x0a, 0x0d, 0x73, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x12,
 	0x05, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x22, 0x25, 0x0a, 0x07, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73,
 	0x74, 0x12, 0x0c, 0x0a, 0x01, 0x61, 0x18, 0x01, 0x20, 0x01, 0x28, 0x03, 0x52, 0x01, 0x61, 0x12,
-	0x0c, 0x0a, 0x01, 0x62, 0x18, 0x02, 0x20, 0x01, 0x28, 0x03, 0x52, 0x01, 0x62, 0x22, 0x22, 0x0a,
-	0x08, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x16, 0x0a, 0x06, 0x72, 0x65, 0x73,
-	0x75, 0x6c, 0x74, 0x18, 0x01, 0x20, 0x01, 0x28, 0x03, 0x52, 0x06, 0x72, 0x65, 0x73, 0x75, 0x6c,
-	0x74, 0x32, 0x61, 0x0a, 0x0a, 0x41, 0x64, 0x64, 0x53, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x12,
-	0x26, 0x0a, 0x03, 0x41, 0x64, 0x64, 0x12, 0x0e, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2e, 0x52,
-	0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x0f, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2e, 0x52,
-	0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x2b, 0x0a, 0x08, 0x4d, 0x75, 0x6c, 0x74, 0x69,
-	0x70, 0x6c, 0x79, 0x12, 0x0e, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2e, 0x52, 0x65, 0x71, 0x75,
+	0x0c, 0x0a, 0x01, 0x62, 0x18, 0x02, 0x20, 0x01, 0x28, 0x03, 0x52, 0x01, 0x62, 0x22, 0x93, 0x01,
+	0x0a, 0x0d, 0x43, 0x6c, 0x69, 0x65, 0x6e, 0x74, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12,
+	0x12, 0x0a, 0x04, 0x74, 0x69, 0x70, 0x6f, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x04, 0x74,
+	0x69, 0x70, 0x6f, 0x12, 0x26, 0x0a, 0x0e, 0x6e, 0x6f, 0x6d, 0x62, 0x72, 0x65, 0x50, 0x72, 0x6f,
+	0x64, 0x75, 0x63, 0x74, 0x6f, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x0e, 0x6e, 0x6f, 0x6d,
+	0x62, 0x72, 0x65, 0x50, 0x72, 0x6f, 0x64, 0x75, 0x63, 0x74, 0x6f, 0x12, 0x14, 0x0a, 0x05, 0x76,
+	0x61, 0x6c, 0x6f, 0x72, 0x18, 0x03, 0x20, 0x01, 0x28, 0x03, 0x52, 0x05, 0x76, 0x61, 0x6c, 0x6f,
+	0x72, 0x12, 0x16, 0x0a, 0x06, 0x6f, 0x72, 0x69, 0x67, 0x65, 0x6e, 0x18, 0x04, 0x20, 0x01, 0x28,
+	0x09, 0x52, 0x06, 0x6f, 0x72, 0x69, 0x67, 0x65, 0x6e, 0x12, 0x18, 0x0a, 0x07, 0x64, 0x65, 0x73,
+	0x74, 0x69, 0x6e, 0x6f, 0x18, 0x05, 0x20, 0x01, 0x28, 0x09, 0x52, 0x07, 0x64, 0x65, 0x73, 0x74,
+	0x69, 0x6e, 0x6f, 0x22, 0x22, 0x0a, 0x08, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12,
+	0x16, 0x0a, 0x06, 0x72, 0x65, 0x73, 0x75, 0x6c, 0x74, 0x18, 0x01, 0x20, 0x01, 0x28, 0x03, 0x52,
+	0x06, 0x72, 0x65, 0x73, 0x75, 0x6c, 0x74, 0x22, 0x34, 0x0a, 0x10, 0x52, 0x65, 0x73, 0x70, 0x6f,
+	0x6e, 0x73, 0x65, 0x54, 0x6f, 0x43, 0x6c, 0x69, 0x65, 0x6e, 0x74, 0x12, 0x20, 0x0a, 0x0b, 0x73,
+	0x65, 0x67, 0x75, 0x69, 0x6d, 0x69, 0x65, 0x6e, 0x74, 0x6f, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09,
+	0x52, 0x0b, 0x73, 0x65, 0x67, 0x75, 0x69, 0x6d, 0x69, 0x65, 0x6e, 0x74, 0x6f, 0x32, 0x99, 0x01,
+	0x0a, 0x0a, 0x41, 0x64, 0x64, 0x53, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x12, 0x26, 0x0a, 0x03,
+	0x41, 0x64, 0x64, 0x12, 0x0e, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2e, 0x52, 0x65, 0x71, 0x75,
 	0x65, 0x73, 0x74, 0x1a, 0x0f, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2e, 0x52, 0x65, 0x73, 0x70,
-	0x6f, 0x6e, 0x73, 0x65, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
+	0x6f, 0x6e, 0x73, 0x65, 0x12, 0x2b, 0x0a, 0x08, 0x4d, 0x75, 0x6c, 0x74, 0x69, 0x70, 0x6c, 0x79,
+	0x12, 0x0e, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2e, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74,
+	0x1a, 0x0f, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2e, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73,
+	0x65, 0x12, 0x36, 0x0a, 0x05, 0x4f, 0x72, 0x64, 0x65, 0x72, 0x12, 0x14, 0x2e, 0x70, 0x72, 0x6f,
+	0x74, 0x6f, 0x2e, 0x43, 0x6c, 0x69, 0x65, 0x6e, 0x74, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74,
+	0x1a, 0x17, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2e, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73,
+	0x65, 0x54, 0x6f, 0x43, 0x6c, 0x69, 0x65, 0x6e, 0x74, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f,
+	0x33,
 }
 
 var (
@@ -156,18 +299,22 @@ func file_service_proto_rawDescGZIP() []byte {
 	return file_service_proto_rawDescData
 }
 
-var file_service_proto_msgTypes = make([]protoimpl.MessageInfo, 2)
+var file_service_proto_msgTypes = make([]protoimpl.MessageInfo, 4)
 var file_service_proto_goTypes = []interface{}{
-	(*Request)(nil),  // 0: proto.Request
-	(*Response)(nil), // 1: proto.Response
+	(*Request)(nil),          // 0: proto.Request
+	(*ClientRequest)(nil),    // 1: proto.ClientRequest
+	(*Response)(nil),         // 2: proto.Response
+	(*ResponseToClient)(nil), // 3: proto.ResponseToClient
 }
 var file_service_proto_depIdxs = []int32{
 	0, // 0: proto.AddService.Add:input_type -> proto.Request
 	0, // 1: proto.AddService.Multiply:input_type -> proto.Request
-	1, // 2: proto.AddService.Add:output_type -> proto.Response
-	1, // 3: proto.AddService.Multiply:output_type -> proto.Response
-	2, // [2:4] is the sub-list for method output_type
-	0, // [0:2] is the sub-list for method input_type
+	1, // 2: proto.AddService.Order:input_type -> proto.ClientRequest
+	2, // 3: proto.AddService.Add:output_type -> proto.Response
+	2, // 4: proto.AddService.Multiply:output_type -> proto.Response
+	3, // 5: proto.AddService.Order:output_type -> proto.ResponseToClient
+	3, // [3:6] is the sub-list for method output_type
+	0, // [0:3] is the sub-list for method input_type
 	0, // [0:0] is the sub-list for extension type_name
 	0, // [0:0] is the sub-list for extension extendee
 	0, // [0:0] is the sub-list for field type_name
@@ -192,7 +339,31 @@ func file_service_proto_init() {
 			}
 		}
 		file_service_proto_msgTypes[1].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*ClientRequest); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_service_proto_msgTypes[2].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*Response); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_service_proto_msgTypes[3].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*ResponseToClient); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -210,7 +381,7 @@ func file_service_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_service_proto_rawDesc,
 			NumEnums:      0,
-			NumMessages:   2,
+			NumMessages:   4,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
@@ -238,6 +409,7 @@ const _ = grpc.SupportPackageIsVersion6
 type AddServiceClient interface {
 	Add(ctx context.Context, in *Request, opts ...grpc.CallOption) (*Response, error)
 	Multiply(ctx context.Context, in *Request, opts ...grpc.CallOption) (*Response, error)
+	Order(ctx context.Context, in *ClientRequest, opts ...grpc.CallOption) (*ResponseToClient, error)
 }
 
 type addServiceClient struct {
@@ -266,10 +438,20 @@ func (c *addServiceClient) Multiply(ctx context.Context, in *Request, opts ...gr
 	return out, nil
 }
 
+func (c *addServiceClient) Order(ctx context.Context, in *ClientRequest, opts ...grpc.CallOption) (*ResponseToClient, error) {
+	out := new(ResponseToClient)
+	err := c.cc.Invoke(ctx, "/proto.AddService/Order", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // AddServiceServer is the server API for AddService service.
 type AddServiceServer interface {
 	Add(context.Context, *Request) (*Response, error)
 	Multiply(context.Context, *Request) (*Response, error)
+	Order(context.Context, *ClientRequest) (*ResponseToClient, error)
 }
 
 // UnimplementedAddServiceServer can be embedded to have forward compatible implementations.
@@ -281,6 +463,9 @@ func (*UnimplementedAddServiceServer) Add(context.Context, *Request) (*Response,
 }
 func (*UnimplementedAddServiceServer) Multiply(context.Context, *Request) (*Response, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Multiply not implemented")
+}
+func (*UnimplementedAddServiceServer) Order(context.Context, *ClientRequest) (*ResponseToClient, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Order not implemented")
 }
 
 func RegisterAddServiceServer(s *grpc.Server, srv AddServiceServer) {
@@ -323,6 +508,24 @@ func _AddService_Multiply_Handler(srv interface{}, ctx context.Context, dec func
 	return interceptor(ctx, in, info, handler)
 }
 
+func _AddService_Order_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ClientRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AddServiceServer).Order(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/proto.AddService/Order",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AddServiceServer).Order(ctx, req.(*ClientRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 var _AddService_serviceDesc = grpc.ServiceDesc{
 	ServiceName: "proto.AddService",
 	HandlerType: (*AddServiceServer)(nil),
@@ -334,6 +537,10 @@ var _AddService_serviceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "Multiply",
 			Handler:    _AddService_Multiply_Handler,
+		},
+		{
+			MethodName: "Order",
+			Handler:    _AddService_Order_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
