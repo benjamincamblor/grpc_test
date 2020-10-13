@@ -7,6 +7,10 @@ message Request {
     int64 b = 2;
 }
 
+message EstadoRequest{
+    string seguimiento = 1;
+}
+
 message ClientRequest{
     string tipo = 1;
     string nombreProducto = 2;
@@ -27,4 +31,5 @@ service AddService{
     rpc Add(Request) returns (Response);
     rpc Multiply(Request) returns (Response);
     rpc Order(ClientRequest) returns (ResponseToClient);
+    rpc RequestEstado(EstadoRequest) returns (ResponseToClient);
 }
