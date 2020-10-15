@@ -1,0 +1,40 @@
+syntax = "proto3";
+
+package proto;
+
+message Paquete{
+	string tipo = 1;
+	string id = 2;
+	int64 valor = 3;
+	string origen = 4;
+	string destino = 5;
+}
+
+message Reporte{
+	string id = 1;
+	int64 intentos = 2;
+	string tipo = 3;
+	bool entregado = 4;
+}
+
+message RespuestaPedido{
+	repeated Reporte reportes = 1;
+	repeated string mensaje = 2;
+}
+
+message PedidoDespacho{
+	repeated Paquete paquetes = 1;
+}
+
+message Disponibilidad{
+	int64 camion = 1;
+}
+
+message RespuestaDisponibilidad{
+	bool respuesta = 1;
+}
+
+service ServicioCamion{
+	rpc Despachar(Paquete) returns (RespuestaPedido);
+	rpc Consultar(Disponibilidad) returns (RespuestaDisponibilidad);
+}
