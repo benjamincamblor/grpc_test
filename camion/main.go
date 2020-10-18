@@ -6,6 +6,7 @@ import(
 	"context"
 	"log"
 	"net"
+	"bufio"
 	"time"
 	"fmt"
 	"sync"
@@ -77,12 +78,35 @@ var cond_dos = sync.NewCond(mutexDos)
 var tiempo_espera int
 var tiempo_entrega int
 
+//
+var vida bool = true
 func failOnError(err error, msg string){
 	if err != nil{
 		log.Fatalf("%s: %s",msg,err)
 	}
 }
 
+func cerrar(){
+	
+	fmt.Println("Para salir presione c ")
+	reader := bufio.NewReader(os.Stdin)
+	char, _, err := reader.ReadRune()
+	if err != nil{
+		fmt.Println(err)
+	}
+	for char != 'c'{
+		//fmt.Println("Para salir presione "c".")
+		if err != nil{
+			fmt.Println(err)
+		}
+		char,_,err = reader.ReadRune()
+	}
+
+	vida = false
+	cond_uno.Broadcast()
+	cond_cero.Broadcast()
+	cond_dos.Broadcast()
+}
 
 func gestionenvios(registro_camion *[]paquete, paquetes_camion *[2]paquete, camion int, llave_camion *sync.Cond, flag_camion *[3]bool){
 	conn, err := grpc.Dial ("10.6.40.247:50051", grpc.WithInsecure())
@@ -95,18 +119,20 @@ func gestionenvios(registro_camion *[]paquete, paquetes_camion *[2]paquete, cami
 	
 	file, err := os.Create(nombre_archivo)
 	failOnError(err, "No se pudo crear el archivo de registros.")
-	defer file.Close()
 
 	writer := csv.NewWriter(file)
-	defer writer.Flush()
 	
-	for{
+	for {
 		var reportes []proto.Reporte
 		//fmt.Println("Numero reportes: ", len(reportes))
 		llave_camion.L.Lock()
-		for contadores[camion] == 0 {
+		for contadores[camion] == 0 && vida{
 			fmt.Println("Im chilling now: ", camion)
 			llave_camion.Wait() //la sincronizacion permite al camion comenzar a operar al momento apropiado
+		}
+
+		if !vida{
+			break
 		}
 	
 		for i := 0; i < tiempo_espera && (flag[camion]==true); i++{
@@ -191,7 +217,8 @@ func gestionenvios(registro_camion *[]paquete, paquetes_camion *[2]paquete, cami
 							FechaEntrega:	fechaFinal,
 						}
 						reportes = append(reportes,reporte)
-
+						(*paquetes_camion)[paquete_elegido].id = ""
+						
 				}
 			}else{//el paquete alcanzo su maximo de intentos.
 				//agregar al registro historico
@@ -223,6 +250,9 @@ func gestionenvios(registro_camion *[]paquete, paquetes_camion *[2]paquete, cami
 		}
 		
 	}
+	defer file.Close()
+	defer writer.Flush()
+
 }
 
 func main(){
@@ -235,7 +265,9 @@ func main(){
 	go gestionenvios(&registro_cero, &camion_cero, 0, cond_cero, &flag)
 	go gestionenvios(&registro_uno, &camion_uno, 1, cond_uno, &flag)
 	go gestionenvios(&registro_dos, &camion_dos, 2, cond_dos, &flag)
-
+	
+	go cerrar()
+	
 	listener, err := net.Listen("tcp",":50052")
 	if err != nil{
 		log.Fatalf("Failed to listen on port 50052: %v\n", err)
