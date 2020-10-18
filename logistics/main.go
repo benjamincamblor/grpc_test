@@ -29,6 +29,7 @@ type registroOrden struct {
 	origen         	string
 	destino        	string
 	seguimiento	string
+	estado string
 	//seguimiento   guuid.UUID
 }
 
@@ -346,6 +347,7 @@ func (s *server) Order(ctx context.Context, request *proto.ClientRequest) (*prot
 		origen:         request.GetOrigen(),
 		destino:        request.GetDestino(),
 		seguimiento:    seguimiento,
+		estado:			"en bodega",
 	}
 	mutexRegistro.Lock()
 	registroOrdenes.PushBack(orden)
@@ -382,7 +384,7 @@ func (s *server) Order(ctx context.Context, request *proto.ClientRequest) (*prot
 	}
 	cond_colas.Broadcast()
 	//cond_camion.Broadcast()
-	return &proto.ResponseToClient{Seguimiento: id}, nil
+	return &proto.ResponseToClient{Seguimiento: seguimiento}, nil
 }
 
 func (s *server) RequestEstado(ctx context.Context, request *proto.EstadoRequest) (*proto.ResponseToClient, error){
@@ -394,7 +396,7 @@ func (s *server) RequestEstado(ctx context.Context, request *proto.EstadoRequest
 	for e := registroOrdenes.Front(); e != nil; e = e.Next(){
 		if e.Value.(registroOrden).seguimiento==codigo.String(){
 			mutexRegistro.Unlock()
-			return &proto.ResponseToClient{Seguimiento: e.Value.(registroOrden).tipo}, nil// retorna tipo por mientras, ya que el registro no lleva el estado de la orden segun el pdf wtf
+			return &proto.ResponseToClient{Seguimiento: e.Value.(registroOrden).estado}, nil// retorna tipo por mientras, ya que el registro no lleva el estado de la orden segun el pdf wtf
 		}
 
 	}
