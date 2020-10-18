@@ -2,6 +2,8 @@ syntax = "proto3";
 
 package proto;
 
+import "google/protobuf/timestamp.proto";
+
 message Request {
     int64 a = 1;
     int64 b = 2;
@@ -27,9 +29,19 @@ message ResponseToClient{
     string seguimiento = 1;
 }
 
+message Reporte{
+	string id = 1;
+	int64 intentos = 2;
+	string tipo = 3;
+	bool entregado = 4;
+	google.protobuf.Timestamp fecha_entrega = 5;
+	int64 valor = 6;
+}
+
 service AddService{
     rpc Add(Request) returns (Response);
     rpc Multiply(Request) returns (Response);
     rpc Order(ClientRequest) returns (ResponseToClient);
     rpc RequestEstado(EstadoRequest) returns (ResponseToClient);
+    rpc ReportarDespacho(Reporte) returns (Response);
 }

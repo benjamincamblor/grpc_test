@@ -2,7 +2,9 @@ syntax = "proto3";
 
 package proto;
 
+
 import "google/protobuf/timestamp.proto";
+
 
 message Paquete{
 	string tipo = 1;
@@ -22,6 +24,7 @@ message ReporteDespacho{
 	bool entregado = 4;
 }
 
+
 message RespuestaPedido{
 	repeated ReporteDespacho reportes = 1;
 	repeated bool esperando = 2;
@@ -37,7 +40,9 @@ message Disponibilidad{
 
 message RespuestaDisponibilidad{
 	bool respuesta = 1;
+
 } 
+
 
 service ServicioCamion{
 	rpc Despachar(Paquete) returns (RespuestaPedido);

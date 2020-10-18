@@ -48,11 +48,73 @@ var normal = list.New()
 //lista de ordenes
 var registroOrdenes = list.New()
 
-func main() {
-	//conexión
-	listener, err := net.Listen("tcp", ":4040")
+func escuchar(c *sync.Cond, cola_paquetes []paquete, clase_cola string){
+	conn, err:= grpc.Dial("10.6.40.248:50051",grpc.WithInsecure())
 	if err != nil {
-		log.Fatalf("failed to listen on port 4040: %v", err)
+		log.Fatalf("Failed to connect: %s", err)
+	}
+	cliente := proto.NewAddServiceCliente(conn)
+	for{	
+		c.L.Lock()
+		if len(cola_paquetes) == 0{//cola agotada
+			c.Wait()
+		}
+		if clase_cola == "normal"{
+			for len(prioritario) > 0 {//la cola normal debe dar preferencia a la cola prioritaria
+				c.Wait() //espera que se agote la cola de paquetes prioritarios
+			}
+
+			request := proto.Disponibilidad{ //consulta si el camion encargado esta disponible
+				Camion = 2
+			} 
+
+			response, err := cliente.Consultar(context.Background(), &request)
+			if err != nil{
+				log.Fatalf("Error al invocar el metodo: %s", err)
+			}
+			fmt.Printf("Consultado camion")
+
+			for response.Respuesta() == false{ //camion no disponible
+				c.Wait() // espera que regrese algun camion
+				response, err := cliente.Consultar(context.Background(), &request) //pregunta otra vez
+				if err != nil{
+					log.Fatalf("Error al invocar el metodo: %s", err)
+				}
+			}
+
+			paquete := proto.Paquete{
+				Tipo = clase_cola,
+				Id = "2",
+				Valor = 40,
+				Origen = "A",
+				Destino = "B"
+			}
+
+			response, err := cliente.Despachar(context.Background(), &paquete)
+			if err != nil{
+				log.Fatalf("Error al invocar el metodo: %s", err)
+			}
+			fmt.Printf("Paquete enviado")
+			c.L.Unlock()
+		}
+	
+	}
+}
+
+
+func broadcast(nombre string, c *sync Cond){
+	c.L.Lock()
+	c.Broadcast()
+	c.L.Unlock()
+}
+
+
+func main() {
+	//hebras permanentes que revisan el estado de las colas
+
+	listener, err := net.Listen("tcp", ":50051")
+	if err != nil {
+		log.Fatalf("failed to listen on port 50051: %v", err)
 	}
 
 	srv := grpc.NewServer()
