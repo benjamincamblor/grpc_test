@@ -1,0 +1,63 @@
+package main
+
+import(
+	"container/list"
+	"context"
+	"log"
+	"net"
+	"time"
+	"sync"
+	"../proto"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/reflection"
+
+)
+
+type server struct{}
+
+type paquete struct{
+	id		string
+	tipo		int32
+	valor		int
+	origen		string
+	destino		string
+	intentos	int32
+	fechaentrega	time.Time
+}
+
+var registroDespachos = list.New()
+
+//Flags que permiten gestionar la asignacion de camiones. Cada uno representa la disponibilidad de un camion
+flag := []bool{true,true,true}
+
+//Contador que asigna secuencialmente id a cada paquete nuevo
+var contador_id_paquete int = 1
+
+func main(){
+	listener, err := net.Listen("tcp",":50051")
+	if err != nil{
+		log.Fatalf("Failed to listen on port 50051: %v\n", err)
+	}
+
+	srvr := grpc.NewServer()
+	proto.RegisterAddServiceServer(srvr, &server{})
+	reflection.Register(srvr)
+
+	if e:= srvr.Serve(listener); e != nil{
+		log.Fatalf("Failed to Serve on port 50051: %v", e)
+	}
+}
+
+func (s *server) Despachar(ctx context.Context, request *proto.PedidoDespacho) (*proto.RespuestaPedido, error){
+	contador_id_paquete = contador_id_paquete + 1
+	reportes := request.GetReportes()
+	paquete := paquete{
+		id:	contador_id_paquete,
+		tipo:	reportes[0].GetTipo()
+	} 
+}
+
+func (s *server) Disponibilidad(ctx context.Context, request *proto.Disponibilidad) (*proto.RespuestaDisponibilidad, error){
+	consulta := request.GetCamion()
+	
+}
