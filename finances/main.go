@@ -97,7 +97,7 @@ func main() {
 				gastos+=-float64((int64(m.intentos)-1)*10)
 				break
 			case "prioritario":
-				if m.estado=="no entregado"{
+				if m.estado=="no recibido"{
 					sum+=float64(m.valor)*0.3-float64((int64(m.intentos)-1)*10)
 					ingresos+=float64(m.valor)*0.3
 					gastos+=-float64((int64(m.intentos)-1)*10)
@@ -108,7 +108,7 @@ func main() {
 				}
 				break
 			case "normal":
-				if m.estado=="no entregado"{
+				if m.estado=="no recibido"{
 					sum+=-float64((int64(m.intentos)-1)*10)
 					gastos+=-float64((int64(m.intentos)-1)*10)
 				}else{

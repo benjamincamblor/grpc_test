@@ -286,6 +286,18 @@ func escuchar(llave_colas *sync.Cond, llave_camion *sync.Cond, cola_paquetes *[]
 			log.Fatalf("Error al invocar el metodo Despachar: %s", err)
 		}
 		fmt.Printf("Paquete",clase_cola," id",revisando_id ,"enviado al camion", revisando)
+		mutexRegistro.Lock()
+		for e := registroOrdenes.Front(); e != nil; e = e.Next(){
+			if e.Value.(registroOrden).id==paquete.Id{
+				temp:=e.Value.(registroOrden)
+				registroOrdenes.Remove(e)
+				temp.estado="en camino"
+				registroOrdenes.PushBack(temp)
+				break
+			}
+	
+		}
+		mutexRegistro.Unlock()
 		llave_camion.L.Unlock()
 		llave_camion.Broadcast()
 		llave_colas.Broadcast()
@@ -407,10 +419,22 @@ func (s *server) ReportarDespacho(ctx context.Context, request *proto.Reporte) (
 	//reportar a finanzas
 	var estado string
 	if request.GetEntregado(){
-		estado= "entregado"
+		estado= "recibido"
 	}else{
-		estado= "no entregado"
+		estado= "no recibido"
 	}
+	mutexRegistro.Lock()
+		for e := registroOrdenes.Front(); e != nil; e = e.Next(){
+			if e.Value.(registroOrden).id==request.GetId(){
+				temp:=e.Value.(registroOrden)
+				registroOrdenes.Remove(e)
+				temp.estado=estado
+				registroOrdenes.PushBack(temp)
+				break
+			}
+	
+		}
+	mutexRegistro.Unlock()
 	message := toFinance(request.GetId(),int(request.GetIntentos()),estado,request.GetValor(),request.GetTipo())
 	mutexFinanzas.Lock()
 	registroFinanzas.PushBack(message)
