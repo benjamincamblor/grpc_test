@@ -186,7 +186,7 @@ func gestionenvios(registro_camion *[]paquete, paquetes_camion *[2]paquete, cami
 					if(simulado <= exito){
 						//fmt.Printf("%f is greater than %f", 0.8, simulado)
 						fecha:= time.Now()
-						err = writer.Write([]string{(*paquetes_camion)[paquete_elegido].id+","+(*paquetes_camion)[paquete_elegido].tipo+","+strconv.FormatInt((*paquetes_camion)[paquete_elegido].valor,10)+","+(*paquetes_camion)[paquete_elegido].origen+","+(*paquetes_camion)[paquete_elegido].destino+","+strconv.FormatInt((*paquetes_camion)[paquete_elegido].intentos,10)+","+fecha.Format("2020-01-01 15:03:00")})	
+						err = writer.Write([]string{(*paquetes_camion)[paquete_elegido].id+","+(*paquetes_camion)[paquete_elegido].tipo+","+strconv.FormatInt((*paquetes_camion)[paquete_elegido].valor,10)+","+(*paquetes_camion)[paquete_elegido].origen+","+(*paquetes_camion)[paquete_elegido].destino+","+strconv.FormatInt((*paquetes_camion)[paquete_elegido].intentos,10)+","+fecha.Format("2006-01-02 15:04:05")})	
 						fechaFinal, _ := ptypes.TimestampProto(fecha)
 						reporte := proto.Reporte{
 							Id:		(*paquetes_camion)[paquete_elegido].id,
@@ -206,8 +206,8 @@ func gestionenvios(registro_camion *[]paquete, paquetes_camion *[2]paquete, cami
 						//paquete_elegido = (paquete_elegido+1)%2
 					}			
 				}else{//costo de reintentos excede el valor de la entrega
-						fecha:= time.Now()
-						err = writer.Write([]string{(*paquetes_camion)[paquete_elegido].id+","+(*paquetes_camion)[paquete_elegido].tipo+","+strconv.FormatInt((*paquetes_camion)[paquete_elegido].valor,10)+","+(*paquetes_camion)[paquete_elegido].origen+","+(*paquetes_camion)[paquete_elegido].destino+","+strconv.FormatInt((*paquetes_camion)[paquete_elegido].intentos,10)+","+fecha.Format("2020-01-01 15:03:00")})	
+						fecha:= time.Time{}
+						err = writer.Write([]string{(*paquetes_camion)[paquete_elegido].id+","+(*paquetes_camion)[paquete_elegido].tipo+","+strconv.FormatInt((*paquetes_camion)[paquete_elegido].valor,10)+","+(*paquetes_camion)[paquete_elegido].origen+","+(*paquetes_camion)[paquete_elegido].destino+","+strconv.FormatInt((*paquetes_camion)[paquete_elegido].intentos,10)+","+fecha.Format("2006-01-02 15:04:05")})	
 						fechaFinal, _ := ptypes.TimestampProto(fecha)
 						reporte := proto.Reporte{
 							Id:		(*paquetes_camion)[paquete_elegido].id,
@@ -223,8 +223,8 @@ func gestionenvios(registro_camion *[]paquete, paquetes_camion *[2]paquete, cami
 			}else{//el paquete alcanzo su maximo de intentos.
 				//agregar al registro historico
 				fmt.Println("Camion ", camion," fallo", intentos_paquete," veces con la entrega del paquete", id_paquete,". Paquete no entregado")
-				fecha := time.Now()
-				err = writer.Write([]string{(*paquetes_camion)[paquete_elegido].id+","+(*paquetes_camion)[paquete_elegido].tipo+","+strconv.FormatInt((*paquetes_camion)[paquete_elegido].valor,10)+","+(*paquetes_camion)[paquete_elegido].origen+","+(*paquetes_camion)[paquete_elegido].destino+","+strconv.FormatInt((*paquetes_camion)[paquete_elegido].intentos,10)+","+fecha.Format("2020-01-01 15:03:00")})
+				fecha := time.Time{}
+				err = writer.Write([]string{(*paquetes_camion)[paquete_elegido].id+","+(*paquetes_camion)[paquete_elegido].tipo+","+strconv.FormatInt((*paquetes_camion)[paquete_elegido].valor,10)+","+(*paquetes_camion)[paquete_elegido].origen+","+(*paquetes_camion)[paquete_elegido].destino+","+strconv.FormatInt((*paquetes_camion)[paquete_elegido].intentos,10)+","+fecha.Format("2006-01-02 15:04:05")})
 				fechaFinal, _ := ptypes.TimestampProto(fecha)
 				reporte := proto.Reporte{
 					Id: 		(*paquetes_camion)[paquete_elegido].id,
