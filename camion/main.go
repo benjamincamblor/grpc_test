@@ -192,6 +192,7 @@ func gestionenvios(registro_camion *[]paquete, paquetes_camion *[2]paquete, cami
 							Id:		(*paquetes_camion)[paquete_elegido].id,
 							Tipo:		(*paquetes_camion)[paquete_elegido].tipo,
 							Valor:		(*paquetes_camion)[paquete_elegido].valor,
+							Intentos:	(*paquetes_camion)[paquete_elegido].intentos,
 							Entregado: 	true,
 							FechaEntrega:	fechaFinal,
 						}
@@ -213,6 +214,7 @@ func gestionenvios(registro_camion *[]paquete, paquetes_camion *[2]paquete, cami
 							Id:		(*paquetes_camion)[paquete_elegido].id,
 							Tipo:		(*paquetes_camion)[paquete_elegido].tipo,
 							Valor:		(*paquetes_camion)[paquete_elegido].valor,
+							Intentos:	(*paquetes_camion)[paquete_elegido].intentos,
 							Entregado: 	false,
 							FechaEntrega:	fechaFinal,
 						}

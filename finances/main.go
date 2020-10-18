@@ -9,16 +9,21 @@ import (
 	"os"
 	"strconv"
 	"fmt"
+	"sync"
 )
 
 type messageFinanzas struct{
-	id           string
-	intentos     int
-	estado 		 string
-	valor        int64
-	tipo         string
+	Id           string  	
+	Intentos     int	
+	Estado 		 string
+	Valor        int64
+	Tipo         string
 }
 
+var end bool 
+var candado = &sync.Mutex{}
+
+var cond_final = sync.NewCond(candado)
 func failOnError(err error, msg string) {
 	if err != nil {
 		log.Fatalf("%s: %s", msg, err)
@@ -26,6 +31,7 @@ func failOnError(err error, msg string) {
 }
 
 func main() {
+	end = false
 	conn, err := amqp.Dial("amqp://guest:guest@localhost:5672/")
 	failOnError(err, "Failed to connect to RabbitMQ")
 	defer conn.Close()
@@ -68,7 +74,6 @@ func main() {
 	var ingresos float64 = 0
 	var m messageFinanzas
 	var sum float64
-	var end bool = false
 
 	go func(){
 		fmt.Println("press t to end execution")
@@ -80,15 +85,18 @@ func main() {
 			}
 		if char=='t'{
 			end=true
+			cond_final.Signal()
 		}
 	}()
 
-	forever := make(chan bool)
-
+//	forever := make(chan bool)
 	go func() {
+	for end == false{
+
 		for d := range msgs {
 			sum=0
 			err:=json.Unmarshal(d.Body,&m)
+			fmt.Println("Tipo:",m.tipo," Id:",m.id,"Intentos:",m.intentos,"Estado:",m.estado,"Valor:",m.valor)
 			failOnError(err, "Failed to decode json")
 			switch m.tipo{
 			case"retail":
@@ -122,17 +130,26 @@ func main() {
 			err = writer.Write([]string{m.id+";"+m.estado+","+strconv.Itoa(m.intentos)+","+fmt.Sprintf("%f", sum)})
         	failOnError(err,"Cannot write to file")
 		}
+	
+	}
 	}()
 
-	//log.Printf(" [*] Waiting for messages. To exit press CTRL+C")
-	if !end{
-		<-forever
-	}else{
-		defer file.Close()
-		defer writer.Flush()
-		log.Printf("Gastos: %f", gastos)
-		log.Printf("Ingresos: %f", ingresos)
-		log.Printf("Balance final: %f", cuenta)
+
+	cond_final.L.Lock()
+	for end == false{
+		cond_final.Wait()
 	}
+
+
+
+	
+	fmt.Println("Variable fea:",end)
+	//log.Printf(" [*] Waiting for messages. To exit press CTRL+C")
+	
+	defer file.Close()
+	defer writer.Flush()
+	log.Printf("Gastos: %f", gastos)
+	log.Printf("Ingresos: %f", ingresos)
+	log.Printf("Balance final: %f", cuenta)
 	
 }
