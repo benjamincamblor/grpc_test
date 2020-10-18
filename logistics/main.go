@@ -13,6 +13,8 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 	"github.com/golang/protobuf/ptypes"
+	"github.com/streadway/amqp"
+	"encoding/json"
 )
 
 type server struct{}
@@ -42,6 +44,14 @@ type paquete struct {
 	fechaentrega time.Time
 }
 
+type messageFinanzas struct{
+	id           string
+	intentos     int
+	estado 		 string
+	valor        int64
+	tipo         string
+}
+
 //mutex
 var mutexColas = &sync.Mutex{}
 var mutexRegistro = &sync.Mutex{}
@@ -59,6 +69,19 @@ var prioritario[]paquete
 var normal[]paquete
 //lista de ordenes
 var registroOrdenes = list.New()
+
+//lista registros finanzas
+var registroFinanzas = list.New()
+
+//mutex
+var mutexFinanzas = &sync.Mutex{}
+var Cond *sync.Cond=sync.NewCond(mutexFinanzas)
+
+func failOnError(err error, msg string) {
+	if err != nil {
+		log.Fatalf("%s: %s", msg, err)
+	}
+}
 
 func escuchar(llave_colas *sync.Cond, llave_camion *sync.Cond, cola_paquetes *[]paquete, clase_cola string){
 	conn, err:= grpc.Dial("10.6.40.248:50052",grpc.WithInsecure())
@@ -278,6 +301,10 @@ func main() {
 	go escuchar(cond_colas, cond_camion, &normal, "normal")
 	go escuchar(cond_colas, cond_camion, &prioritario, "prioritario")
 	go escuchar(cond_colas, cond_camion, &retail, "retail")
+
+	//hebra que reporta a finanzas
+	go connectToFinances()
+
 	listener, err := net.Listen("tcp", ":50051")
 	if err != nil {
 		log.Fatalf("failed to listen on port 50051: %v", err)
@@ -375,7 +402,69 @@ func (s *server) RequestEstado(ctx context.Context, request *proto.EstadoRequest
 }
 
 func (s *server) ReportarDespacho(ctx context.Context, request *proto.Reporte) (*proto.Response, error){
-	//reportar a finanzas	
-	cond_camion.Broadcast()
+	//reportar a finanzas
+	var estado string
+	if request.GetEntregado(){
+		estado= "entregado"
+	}else{
+		estado= "no entregado"
+	}
+	message := toFinance(request.GetId(),int(request.GetIntentos()),estado,request.GetValor(),request.GetTipo())
+	mutexFinanzas.Lock()
+	registroFinanzas.PushBack(message)
+	mutexFinanzas.Unlock()
+	Cond.Signal()
+	cond_camion.Broadcast()//danger?
 	return &proto.Response{Result: 1}, nil	
+}
+
+func toFinance(id string, intentos int, estado string, valor int64, tipo string)([]byte){
+	m:=messageFinanzas{id,intentos,estado, valor, tipo}
+	message, err := json.Marshal(m)
+	failOnError(err, "Failed to encode a message")
+
+	return message
+}
+
+func connectToFinances() {
+	conn, err := amqp.Dial("amqp://admin:admin@localhost:5672/")
+	failOnError(err, "Failed to connect to RabbitMQ")
+	defer conn.Close()
+
+	ch, err := conn.Channel()
+	failOnError(err, "Failed to open a channel")
+	defer ch.Close()
+
+	q, err := ch.QueueDeclare(
+		"hello", // name
+		false,   // durable
+		false,   // delete when unused
+		false,   // exclusive
+		false,   // no-wait
+		nil,     // arguments
+	)
+	failOnError(err, "Failed to declare a queue")
+
+	for {
+		mutexFinanzas.Lock()
+		if registroFinanzas.Len()==0 {
+			Cond.Wait()
+		}
+		message:=registroFinanzas.Remove(registroFinanzas.Front()).([]byte)
+	
+		err = ch.Publish(
+			"",     // exchange
+			q.Name, // routing key
+			false,  // mandatory
+			false,  // immediate
+			amqp.Publishing{
+				ContentType: "text/plain",
+				Body:        message,
+			})
+		
+		failOnError(err, "Failed to publish a message")
+		mutexFinanzas.Unlock()
+	}
+
+		
 }

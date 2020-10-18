@@ -13,7 +13,13 @@ import (
 	"io"
 	"encoding/csv"
 	"strconv"
+	"sync"
 )
+
+//lista de códigos de seguimiento
+var listaSeguimiento = list.New()
+
+var mutexSeguimiento = &sync.Mutex{}
 
 func main(){
 	
@@ -29,7 +35,28 @@ func main(){
 		log.Fatalf("failed to connect: %s", err)
 	}
 
-	client := proto.NewAddServiceClient(conn)
+	var client = proto.NewAddServiceClient(conn)
+
+	go func(){
+		time.Sleep(2 * 60 * time.Second)
+		for {
+			mutexSeguimiento.Lock()
+			for e := listaSeguimiento.Front(); e != nil; e = e.Next(){
+				message:= proto.EstadoRequest{
+					Seguimiento: e.Value.(string),
+				}
+				response, err:=client.RequestEstado(context.Background(), &message)
+				if err != nil{
+					log.Fatalf("error when calling Order: %s", err)
+				}
+				fmt.Println("Order número de seguimiento "+e.Value.(string)+", estado:"+response.Seguimiento)
+				mutexSeguimiento.Unlock()
+				time.Sleep(1*60*time.Second)
+				mutexSeguimiento.Lock()
+			}
+			mutexSeguimiento.Unlock()
+		}
+	}()
 
 	/*
 	message := proto.Request{
@@ -45,8 +72,6 @@ func main(){
 	char, _, err := reader.ReadRune()
 	var tipo string
 
-	//lista de códigos de seguimiento
-	listaSeguimiento := list.New()
 
 	if err != nil {
 	fmt.Println(err)
@@ -94,7 +119,9 @@ func main(){
 		if err != nil{
 			log.Fatalf("error when calling Order: %s", err)
 		}
+		mutexSeguimiento.Lock()
 		listaSeguimiento.PushBack(response.Seguimiento)
+		mutexSeguimiento.Unlock()
 		time.Sleep(time.Duration(segundos)*time.Second)
 	}
 	
@@ -134,7 +161,9 @@ func main(){
 			log.Fatalf("error when calling Order: %s", err)
 		}
 		fmt.Printf("Enviado: Retail\n")
+		mutexSeguimiento.Lock()
 		listaSeguimiento.PushBack(response.Seguimiento)
+		mutexSeguimiento.Unlock()
 		time.Sleep(time.Duration(segundos)*time.Second)
 	}
 	break
@@ -143,7 +172,19 @@ func main(){
 	
 
 }
-
-func pedirEstado(idSeguimiento string){
-		
+/*
+func pedirEstado(){
+	time.Sleep(1 * 60 * time.Second)
+	for {
+		for e := listaSeguimiento.Front(); e != nil; e = e.Next(){
+			message:= proto.EstadoRequest{
+				Seguimiento: e.Value.(string),
+			}
+			response, err:=client.RequestEstado(context.Background(), &message)
+			if err != nil{
+				log.Fatalf("error when calling Order: %s", err)
+			}
+		}
+	}
 }
+*/
