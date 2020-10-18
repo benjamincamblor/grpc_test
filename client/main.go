@@ -37,27 +37,7 @@ func main(){
 
 	var client = proto.NewAddServiceClient(conn)
 
-	go func(){
-		time.Sleep(2 * 60 * time.Second)
-		for {
-			mutexSeguimiento.Lock()
-			for e := listaSeguimiento.Front(); e != nil; e = e.Next(){
-				message:= proto.EstadoRequest{
-					Seguimiento: e.Value.(string),
-				}
-				response, err:=client.RequestEstado(context.Background(), &message)
-				if err != nil{
-					log.Fatalf("error when calling Order: %s", err)
-				}
-				fmt.Println("Order número de seguimiento "+e.Value.(string)+", estado:"+response.Seguimiento)
-				mutexSeguimiento.Unlock()
-				time.Sleep(1*60*time.Second)
-				mutexSeguimiento.Lock()
-			}
-			mutexSeguimiento.Unlock()
-		}
-	}()
-
+	
 	/*
 	message := proto.Request{
 		A:2,
@@ -100,7 +80,7 @@ func main(){
 				}
 				fmt.Println("Order número de seguimiento "+e.Value.(string)+", estado:"+response.Seguimiento)
 				mutexSeguimiento.Unlock()
-				time.Sleep(1*60*time.Second)
+				time.Sleep(time.Duration(segundos)*60*time.Second)
 				mutexSeguimiento.Lock()
 			}
 			mutexSeguimiento.Unlock()
