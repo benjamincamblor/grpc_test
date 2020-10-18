@@ -1,6 +1,7 @@
 package main
 
 import(
+	"strconv"
 	"container/list"
 	"context"
 	"log"
@@ -13,6 +14,8 @@ import(
 	"google.golang.org/grpc/reflection"
 	"math/rand"
 	"github.com/golang/protobuf/ptypes"
+	"os"
+	"encoding/csv"
 
 )
 	//"os"
@@ -74,6 +77,11 @@ var cond_dos = sync.NewCond(mutexDos)
 var tiempo_espera int
 var tiempo_entrega int
 
+func failOnError(err error, msg string){
+	if err != nil{
+		log.Fatalf("%s: %s",msg,err)
+	}
+}
 
 
 func gestionenvios(registro_camion *[]paquete, paquetes_camion *[2]paquete, camion int, llave_camion *sync.Cond, flag_camion *[3]bool){
@@ -83,7 +91,15 @@ func gestionenvios(registro_camion *[]paquete, paquetes_camion *[2]paquete, cami
 	}
 	client := proto.NewAddServiceClient(conn)	
 	
+	nombre_archivo := fmt.Sprintf("Registro_camion_%d.csv", camion)
+	
+	file, err := os.Create(nombre_archivo)
+	failOnError(err, "No se pudo crear el archivo de registros.")
+	defer file.Close()
 
+	writer := csv.NewWriter(file)
+	defer writer.Flush()
+	
 	for{
 		var reportes []proto.Reporte
 		//fmt.Println("Numero reportes: ", len(reportes))
@@ -102,7 +118,16 @@ func gestionenvios(registro_camion *[]paquete, paquetes_camion *[2]paquete, cami
 		llave_camion.L.Unlock()
 		fmt.Println("Camion", camion, "on the move")
 		var paquete_elegido int
-		if (*paquetes_camion)[0].valor > (*paquetes_camion)[1].valor {
+		var multiplicador_prioritario = [2]float64{1.0,1.0}
+		
+		for i:=0; i < len(*paquetes_camion); i++{
+			if (*paquetes_camion)[i].tipo == "prioritario"{
+				multiplicador_prioritario[i] = 1.3
+			}
+		}
+				
+
+		if float64((*paquetes_camion)[0].valor) * multiplicador_prioritario[0] > float64((*paquetes_camion)[1].valor) * multiplicador_prioritario[1] {
 			paquete_elegido = 0	
 		}else{
 			paquete_elegido = 1
@@ -121,46 +146,66 @@ func gestionenvios(registro_camion *[]paquete, paquetes_camion *[2]paquete, cami
 			tipo_paquete := (*paquetes_camion)[paquete_elegido].tipo
 			intentos_paquete := (*paquetes_camion)[paquete_elegido].intentos
 			id_paquete := (*paquetes_camion)[paquete_elegido].id
-			if ((tipo_paquete != "retail") && (intentos_paquete) < 2) || ((tipo_paquete == "retail") && (intentos_paquete < 3) ){
-				//simular envio
-				fmt.Println("Camion", camion , " entregando paquete ",id_paquete)
-				var exito float64 = 0.8
-				//(*paquetes_camion)[paquete_elegido].intentos++
-				simulado := rand.Float64()
-				//fmt.Println("Simulado: ",simulado)
-				(*paquetes_camion)[paquete_elegido].intentos++
-				time.Sleep(time.Duration(tiempo_entrega)*time.Second)
-				if(simulado <= exito){
-					//fmt.Printf("%f is greater than %f", 0.8, simulado)
-					fecha , _ := ptypes.TimestampProto(time.Now())
-					reporte := proto.Reporte{
-						Id:		(*paquetes_camion)[paquete_elegido].id,
-						Tipo:		(*paquetes_camion)[paquete_elegido].tipo,
-						Valor:		(*paquetes_camion)[paquete_elegido].valor,
-						Entregado: 	true,
-						FechaEntrega:	fecha,
-					}
-					reportes = append(reportes,reporte)
-					fmt.Println("Camion", camion ,"entrego", id_paquete)
-					//agregar paquete al registro historico
-					(*paquetes_camion)[paquete_elegido].id = "" //flag que remueve el paquete del camion
-				}else{
-					//fmt.Println("%f is lower than %f", simulado, 0.8)
-					fmt.Println("Camion", camion , "fallo", intentos_paquete+1, "veces entregar el paquete", id_paquete)
+			valor := (*paquetes_camion)[paquete_elegido].valor 
+			if intentos_paquete < 3 {
+				if ((tipo_paquete != "retail") && ( ((float64(valor)*multiplicador_prioritario[paquete_elegido]) - float64(intentos_paquete*10)) >= 0.0 )) || (tipo_paquete == "retail"){
+					//simular envio
+					fmt.Println("Camion", camion , " entregando paquete ",id_paquete)
+					var exito float64 = 0.8
 					//(*paquetes_camion)[paquete_elegido].intentos++
-					//paquete_elegido = (paquete_elegido+1)%2
-				}			
+					simulado := rand.Float64()
+					//fmt.Println("Simulado: ",simulado)
+					(*paquetes_camion)[paquete_elegido].intentos++
+					time.Sleep(time.Duration(tiempo_entrega)*time.Second)
+					if(simulado <= exito){
+						//fmt.Printf("%f is greater than %f", 0.8, simulado)
+						fecha:= time.Now()
+						err = writer.Write([]string{(*paquetes_camion)[paquete_elegido].id+","+(*paquetes_camion)[paquete_elegido].tipo+","+strconv.FormatInt((*paquetes_camion)[paquete_elegido].valor,10)+","+(*paquetes_camion)[paquete_elegido].origen+","+(*paquetes_camion)[paquete_elegido].destino+","+strconv.FormatInt((*paquetes_camion)[paquete_elegido].intentos,10)+","+fecha.Format("2020-01-01 15:03:00")})	
+						fechaFinal, _ := ptypes.TimestampProto(fecha)
+						reporte := proto.Reporte{
+							Id:		(*paquetes_camion)[paquete_elegido].id,
+							Tipo:		(*paquetes_camion)[paquete_elegido].tipo,
+							Valor:		(*paquetes_camion)[paquete_elegido].valor,
+							Entregado: 	true,
+							FechaEntrega:	fechaFinal,
+						}
+						reportes = append(reportes,reporte)
+						fmt.Println("Camion", camion ,"entrego", id_paquete)
+						//agregar paquete al registro historico
+						(*paquetes_camion)[paquete_elegido].id = "" //flag que remueve el paquete del camion
+					}else{
+						//fmt.Println("%f is lower than %f", simulado, 0.8)
+						fmt.Println("Camion", camion , "fallo", intentos_paquete+1, "veces entregar el paquete", id_paquete)
+						//(*paquetes_camion)[paquete_elegido].intentos++
+						//paquete_elegido = (paquete_elegido+1)%2
+					}			
+				}else{//costo de reintentos excede el valor de la entrega
+						fecha:= time.Now()
+						err = writer.Write([]string{(*paquetes_camion)[paquete_elegido].id+","+(*paquetes_camion)[paquete_elegido].tipo+","+strconv.FormatInt((*paquetes_camion)[paquete_elegido].valor,10)+","+(*paquetes_camion)[paquete_elegido].origen+","+(*paquetes_camion)[paquete_elegido].destino+","+strconv.FormatInt((*paquetes_camion)[paquete_elegido].intentos,10)+","+fecha.Format("2020-01-01 15:03:00")})	
+						fechaFinal, _ := ptypes.TimestampProto(fecha)
+						reporte := proto.Reporte{
+							Id:		(*paquetes_camion)[paquete_elegido].id,
+							Tipo:		(*paquetes_camion)[paquete_elegido].tipo,
+							Valor:		(*paquetes_camion)[paquete_elegido].valor,
+							Entregado: 	false,
+							FechaEntrega:	fechaFinal,
+						}
+						reportes = append(reportes,reporte)
+
+				}
 			}else{//el paquete alcanzo su maximo de intentos.
 				//agregar al registro historico
 				fmt.Println("Camion ", camion," fallo", intentos_paquete," veces con la entrega del paquete", id_paquete,". Paquete no entregado")
-				fecha,_ := ptypes.TimestampProto(time.Now())
+				fecha := time.Now()
+				err = writer.Write([]string{(*paquetes_camion)[paquete_elegido].id+","+(*paquetes_camion)[paquete_elegido].tipo+","+strconv.FormatInt((*paquetes_camion)[paquete_elegido].valor,10)+","+(*paquetes_camion)[paquete_elegido].origen+","+(*paquetes_camion)[paquete_elegido].destino+","+strconv.FormatInt((*paquetes_camion)[paquete_elegido].intentos,10)+","+fecha.Format("2020-01-01 15:03:00")})
+				fechaFinal, _ := ptypes.TimestampProto(fecha)
 				reporte := proto.Reporte{
 					Id: 		(*paquetes_camion)[paquete_elegido].id,
 					Tipo:		(*paquetes_camion)[paquete_elegido].tipo,
 					Valor:		(*paquetes_camion)[paquete_elegido].valor,
 					Intentos:	(*paquetes_camion)[paquete_elegido].intentos,
 					Entregado:	false,
-					FechaEntrega:	fecha,
+					FechaEntrega:	fechaFinal,
 					
 				}
 				reportes = append(reportes,reporte)
