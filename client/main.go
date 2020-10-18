@@ -85,6 +85,28 @@ func main(){
 		log.Fatalln("Couldn't open the csv file", err)
 	}
 	r := csv.NewReader(csvfile)
+
+	go func(){
+		time.Sleep(2 * 60 * time.Second)
+		for {
+			mutexSeguimiento.Lock()
+			for e := listaSeguimiento.Front(); e != nil; e = e.Next(){
+				message:= proto.EstadoRequest{
+					Seguimiento: e.Value.(string),
+				}
+				response, err:=client.RequestEstado(context.Background(), &message)
+				if err != nil{
+					log.Fatalf("error when calling Order: %s", err)
+				}
+				fmt.Println("Order número de seguimiento "+e.Value.(string)+", estado:"+response.Seguimiento)
+				mutexSeguimiento.Unlock()
+				time.Sleep(1*60*time.Second)
+				mutexSeguimiento.Lock()
+			}
+			mutexSeguimiento.Unlock()
+		}
+	}()
+
 	for{	
 		record, err := r.Read()
 		if err == io.EOF {
@@ -156,14 +178,11 @@ func main(){
 			Destino: record[3],
 		}
 
-		response, err := client.Order(context.Background(), &request)
+		_, err = client.Order(context.Background(), &request)
 		if err != nil{
 			log.Fatalf("error when calling Order: %s", err)
 		}
 		fmt.Printf("Enviado: Retail\n")
-		mutexSeguimiento.Lock()
-		listaSeguimiento.PushBack(response.Seguimiento)
-		mutexSeguimiento.Unlock()
 		time.Sleep(time.Duration(segundos)*time.Second)
 	}
 	break
