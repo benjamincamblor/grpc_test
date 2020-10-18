@@ -74,7 +74,7 @@ func main(){
 
 
 	if err != nil {
-	fmt.Println(err)
+		fmt.Println(err)
 	}
 	
 	switch char {
@@ -106,6 +106,8 @@ func main(){
 			mutexSeguimiento.Unlock()
 		}
 	}()
+	
+	_, _ = r.Read() //Lee la primera linea del archivo csv, de otra manera el cliente enviara una orden basura
 
 	for{	
 		record, err := r.Read()
@@ -116,24 +118,24 @@ func main(){
 			log.Fatal(err)
 		}
 
-		if  record[4]=="1"{
+		if  record[5]=="1"{
 			tipo="prioritario"
 			fmt.Printf("Enviado prioritario\n")
 		}else{
 			tipo="normal"
 			fmt.Printf("Enviado normal\n")
 		}
-		valor, err := strconv.ParseInt(record[1], 10, 64)
+		valor, err := strconv.ParseInt(record[2], 10, 64)
 		if err != nil {
 			fmt.Printf("Error converting valor")
 		}
 
 		request := proto.ClientRequest{
 			Tipo:tipo,
-			NombreProducto: record[0],
+			NombreProducto: record[1],
 			Valor: valor,
-			Origen: record[2],
-			Destino: record[3],
+			Origen: record[3],
+			Destino: record[4],
 		}
 
 		response, err := client.Order(context.Background(), &request)
@@ -141,6 +143,7 @@ func main(){
 		if err != nil{
 			log.Fatalf("error when calling Order: %s", err)
 		}
+
 		mutexSeguimiento.Lock()
 		listaSeguimiento.PushBack(response.Seguimiento)
 		mutexSeguimiento.Unlock()
@@ -155,7 +158,10 @@ func main(){
 	if err != nil {
 		log.Fatalln("Couldn't open the csv file", err)
 	}
+	
 	r := csv.NewReader(csvfile)
+	
+	_,_ = r.Read()
 	for{
 		record, err := r.Read()
 		if err == io.EOF {
@@ -165,17 +171,17 @@ func main(){
 			log.Fatal(err)
 		}
 
-		valor, err := strconv.ParseInt(record[1], 10, 64)
+		valor, err := strconv.ParseInt(record[2], 10, 64)
 		if err != nil {
 			fmt.Printf("Error converting valor")
 		}
 
 		request := proto.ClientRequest{
 			Tipo:"retail",
-			NombreProducto: record[0],
+			NombreProducto: record[1],
 			Valor: valor,
-			Origen: record[2],
-			Destino: record[3],
+			Origen: record[3],
+			Destino: record[4],
 		}
 
 		_, err = client.Order(context.Background(), &request)
