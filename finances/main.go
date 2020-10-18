@@ -119,7 +119,7 @@ func main() {
 				break
 			}
 			cuenta+=sum
-			err = writer.Write([]string{m.estado+","+strconv.Itoa(m.intentos)+","+fmt.Sprintf("%f", sum)})
+			err = writer.Write([]string{m.id+";"+m.estado+","+strconv.Itoa(m.intentos)+","+fmt.Sprintf("%f", sum)})
         	failOnError(err,"Cannot write to file")
 		}
 	}()
