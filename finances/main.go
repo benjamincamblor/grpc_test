@@ -128,6 +128,8 @@ func main() {
 	if !end{
 		<-forever
 	}else{
+		defer file.Close()
+		defer writer.Flush()
 		log.Printf("Gastos: %f", gastos)
 		log.Printf("Ingresos: %f", ingresos)
 		log.Printf("Balance final: %f", cuenta)
