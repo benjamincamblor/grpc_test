@@ -46,11 +46,11 @@ type paquete struct {
 }
 
 type messageFinanzas struct{
-	id           string
-	intentos     int
-	estado 		 string
-	valor        int64
-	tipo         string
+	Id           string	
+	Intentos     int64	
+	Estado 	     string	
+	Valor        int64	
+	Tipo         string	
 }
 
 //mutex
@@ -85,7 +85,7 @@ func failOnError(err error, msg string) {
 }
 
 func escuchar(llave_colas *sync.Cond, llave_camion *sync.Cond, cola_paquetes *[]paquete, clase_cola string){
-	conn, err:= grpc.Dial("10.6.40.248:50052",grpc.WithInsecure())
+	conn, err:= grpc.Dial("10.6.40.249:50052",grpc.WithInsecure())
 	if err != nil {
 		log.Fatalf("Failed to connect: %s", err)
 	}
@@ -435,7 +435,7 @@ func (s *server) ReportarDespacho(ctx context.Context, request *proto.Reporte) (
 	
 		}
 	mutexRegistro.Unlock()
-	message := toFinance(request.GetId(),int(request.GetIntentos()),estado,request.GetValor(),request.GetTipo())
+	message := toFinance(request.GetId(),request.GetIntentos(),estado,request.GetValor(),request.GetTipo())
 	mutexFinanzas.Lock()
 	registroFinanzas.PushBack(message)
 	mutexFinanzas.Unlock()
@@ -444,16 +444,27 @@ func (s *server) ReportarDespacho(ctx context.Context, request *proto.Reporte) (
 	return &proto.Response{Result: 1}, nil	
 }
 
-func toFinance(id string, intentos int, estado string, valor int64, tipo string)([]byte){
-	m:=messageFinanzas{id,intentos,estado, valor, tipo}
+func toFinance(id string, intentos int64, estado string, valor int64, tipo string)([]byte){
+	fmt.Println("Parametros********** Intentos:",intentos,"Valor:",valor,"Estado",estado)
+	m:=messageFinanzas{Id: id,
+			Intentos: intentos,
+			Estado: estado, 
+			Valor: valor, 
+			Tipo: tipo,}
+	fmt.Println("Id:",id,"Intentos:",intentos,"Estado:",estado)
 	message, err := json.Marshal(m)
-	failOnError(err, "Failed to encode a message")
+	var aqui messageFinanzas
+	//message2:= registroFinanzas.Remove(registroFinanzas.Front()).([]byte)
+	json.Unmarshal(message,&aqui)
+	//fmt.Println("Imprimiendo mensaje****************************: Id",aqui.Id," Tipo:",aqui.Tipo,"Valor:",aqui.Valor,"Intentos:",aqui.Intentos)
 
+	failOnError(err, "Failed to encode a message")
+	
 	return message
 }
 
 func connectToFinances() {
-	conn, err := amqp.Dial("amqp://admin:admin@localhost:5672/")
+	conn, err := amqp.Dial("amqp://admin:admin@10.6.40.249:5672/")
 	failOnError(err, "Failed to connect to RabbitMQ")
 	defer conn.Close()
 
@@ -476,15 +487,17 @@ func connectToFinances() {
 		if registroFinanzas.Len()==0 {
 			Cond.Wait()
 		}
+		var aqui messageFinanzas
 		message:=registroFinanzas.Remove(registroFinanzas.Front()).([]byte)
-	
+		json.Unmarshal(message,&aqui)
+		fmt.Println("Imprimiendo mensaje****************************: Tipo:",aqui.Tipo,"Valor:",aqui.Valor,"Intentos:",aqui.Intentos)
 		err = ch.Publish(
 			"",     // exchange
 			q.Name, // routing key
 			false,  // mandatory
 			false,  // immediate
 			amqp.Publishing{
-				ContentType: "text/plain",
+				//ContentType: "text/plain",
 				Body:        message,
 			})
 		
