@@ -67,7 +67,7 @@ func main(){
 	r := csv.NewReader(csvfile)
 
 	go func(){
-		time.Sleep(1 * 60 * time.Second)
+		time.Sleep(1 * 30 * time.Second)
 		for {
 			mutexSeguimiento.Lock()
 			for e := listaSeguimiento.Front(); e != nil; e = e.Next(){

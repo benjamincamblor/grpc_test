@@ -14,7 +14,7 @@ import (
 
 type messageFinanzas struct{
 	Id           string  	
-	Intentos     int	
+	Intentos     int64	
 	Estado 		 string
 	Valor        int64
 	Tipo         string
@@ -96,38 +96,38 @@ func main() {
 		for d := range msgs {
 			sum=0
 			err:=json.Unmarshal(d.Body,&m)
-			fmt.Println("Tipo:",m.tipo," Id:",m.id,"Intentos:",m.intentos,"Estado:",m.estado,"Valor:",m.valor)
+			fmt.Println("Tipo:",m.Tipo," Id:",m.Id,"Intentos:",m.Intentos,"Estado:",m.Estado,"Valor:",m.Valor)
 			failOnError(err, "Failed to decode json")
-			switch m.tipo{
+			switch m.Tipo{
 			case"retail":
-				sum+=float64(m.valor-(int64(m.intentos)-1)*10)
-				ingresos+=float64(m.valor)
-				gastos+=-float64((int64(m.intentos)-1)*10)
+				sum+=float64(m.Valor-(m.Intentos-1)*10)
+				ingresos+=float64(m.Valor)
+				gastos+=-float64((m.Intentos-1)*10)
 				break
 			case "prioritario":
-				if m.estado=="no recibido"{
-					sum+=float64(m.valor)*0.3-float64((int64(m.intentos)-1)*10)
-					ingresos+=float64(m.valor)*0.3
-					gastos+=-float64((int64(m.intentos)-1)*10)
+				if m.Estado=="no recibido"{
+					sum+=float64(m.Valor)*0.3-float64((m.Intentos-1)*10)
+					ingresos+=float64(m.Valor)*0.3
+					gastos+=-float64((m.Intentos-1)*10)
 				}else{
-					sum+=float64(m.valor)*1.3-float64((int64(m.intentos)-1)*10)
-					ingresos+=float64(m.valor)*1.3
-					gastos+=-float64((int64(m.intentos)-1)*10)
+					sum+=float64(m.Valor)*1.3-float64((m.Intentos-1)*10)
+					ingresos+=float64(m.Valor)*1.3
+					gastos+=-float64((m.Intentos-1)*10)
 				}
 				break
 			case "normal":
-				if m.estado=="no recibido"{
-					sum+=-float64((int64(m.intentos)-1)*10)
-					gastos+=-float64((int64(m.intentos)-1)*10)
+				if m.Estado=="no recibido"{
+					sum+=-float64((m.Intentos-1)*10)
+					gastos+=-float64((m.Intentos-1)*10)
 				}else{
-					sum+=float64(m.valor)-float64((int64(m.intentos)-1)*10)
-					ingresos+=float64(m.valor)
-					gastos+=-float64((int64(m.intentos)-1)*10)
+					sum+=float64(m.Valor)-float64((m.Intentos-1)*10)
+					ingresos+=float64(m.Valor)
+					gastos+=-float64((m.Intentos-1)*10)
 				}
 				break
 			}
 			cuenta+=sum
-			err = writer.Write([]string{m.id+";"+m.estado+","+strconv.Itoa(m.intentos)+","+fmt.Sprintf("%f", sum)})
+			err = writer.Write([]string{m.Id+";"+m.Estado+","+strconv.FormatInt(m.Intentos,10)+","+fmt.Sprintf("%f", sum)})
         	failOnError(err,"Cannot write to file")
 		}
 	
@@ -143,7 +143,7 @@ func main() {
 
 
 	
-	fmt.Println("Variable fea:",end)
+	//fmt.Println("Variable fea:",end)
 	//log.Printf(" [*] Waiting for messages. To exit press CTRL+C")
 	
 	defer file.Close()

@@ -440,24 +440,19 @@ func (s *server) ReportarDespacho(ctx context.Context, request *proto.Reporte) (
 	registroFinanzas.PushBack(message)
 	mutexFinanzas.Unlock()
 	Cond.Signal()
-	cond_camion.Broadcast()//danger?
+	cond_camion.Broadcast()
 	return &proto.Response{Result: 1}, nil	
 }
 
 func toFinance(id string, intentos int64, estado string, valor int64, tipo string)([]byte){
-	fmt.Println("Parametros********** Intentos:",intentos,"Valor:",valor,"Estado",estado)
+	//fmt.Println("Parametros********** Intentos:",intentos,"Valor:",valor,"Estado",estado)
 	m:=messageFinanzas{Id: id,
 			Intentos: intentos,
 			Estado: estado, 
 			Valor: valor, 
 			Tipo: tipo,}
-	fmt.Println("Id:",id,"Intentos:",intentos,"Estado:",estado)
+	//fmt.Println("Id:",id,"Intentos:",intentos,"Estado:",estado)
 	message, err := json.Marshal(m)
-	var aqui messageFinanzas
-	//message2:= registroFinanzas.Remove(registroFinanzas.Front()).([]byte)
-	json.Unmarshal(message,&aqui)
-	//fmt.Println("Imprimiendo mensaje****************************: Id",aqui.Id," Tipo:",aqui.Tipo,"Valor:",aqui.Valor,"Intentos:",aqui.Intentos)
-
 	failOnError(err, "Failed to encode a message")
 	
 	return message
@@ -487,10 +482,7 @@ func connectToFinances() {
 		if registroFinanzas.Len()==0 {
 			Cond.Wait()
 		}
-		var aqui messageFinanzas
 		message:=registroFinanzas.Remove(registroFinanzas.Front()).([]byte)
-		json.Unmarshal(message,&aqui)
-		fmt.Println("Imprimiendo mensaje****************************: Tipo:",aqui.Tipo,"Valor:",aqui.Valor,"Intentos:",aqui.Intentos)
 		err = ch.Publish(
 			"",     // exchange
 			q.Name, // routing key
